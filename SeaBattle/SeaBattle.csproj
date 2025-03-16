@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1921D6BB-8712-4B7E-AF4A-8AFB6A5DBBF7}</ProjectGuid>
+    <ProjectGuid>{85111CF7-FED6-4816-AD05-D0000CB50E56}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>SeaBattle</RootNamespace>
     <AssemblyName>SeaBattle</AssemblyName>
