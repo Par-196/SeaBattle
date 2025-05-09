@@ -61,7 +61,7 @@ namespace SeaBattle.Model
 
             int allShips = oneDeckShips + twoDeckShips + threeDeckShips + fourDeckShips;
 
-            while(allShips != 0) 
+            while (allShips != 0)
             {
                 Console.WriteLine("Виберiть корабель" + "\n" +
                     "1. Однопалубний" + "\n" +
@@ -69,75 +69,75 @@ namespace SeaBattle.Model
                     "3. Трипалубний" + "\n" +
                     "4. Чотирьохпалубний");
 
-                if (oneDeckShips == 0 && twoDeckShips == 0 || threeDeckShips == 0 || fourDeckShips == 0)
+                if (oneDeckShips != 0 || twoDeckShips != 0 || threeDeckShips != 0 || fourDeckShips != 0)
                 {
-                    Console.WriteLine("Ви не можете бiльше розмiстити кораблi даного типу");
-                    break;
-                }
-
-
-                if (System.Enum.TryParse(Console.ReadLine(), out  type))
-                {
-                    do
+                    if (System.Enum.TryParse(Console.ReadLine(), out type))
                     {
-                        Console.WriteLine("Enter cord x");
-                        point.X = int.Parse(Console.ReadLine());
-
-                        Console.WriteLine("Enter cord y");
-                        point.Y = int.Parse(Console.ReadLine());
-
-                    } while (point.X < 1 || point.X > 11 || point.Y < 1 || point.Y > 11 ||
-                        Cells[point.X, point.Y].Value != TypeCell.Empty || AnyShipsAround(point));
-
-                    if (type != TypeShips.OneCellShip)
-                    {
-                        Console.WriteLine("Enter direction" + "\n" +
-                            "1. Вгору" + "\n" +
-                            "2. Вниз" + "\n" +
-                            "3. Вліво" + "\n" +
-                            "4. Вправо");
-                        System.Enum.TryParse(Console.ReadLine(), out direction);
-
-                        switch (type)
+                        do
                         {
-                            case TypeShips.TwoCellShip:
-                                {
-                                    SetShip(point, direction, type);
-                                    twoDeckShips--;
-                                    ShowField();
-                                }
-                                break;
-                            case TypeShips.ThreeCellShip:
-                                {
-                                    SetShip(point, direction, type);
-                                    threeDeckShips--;
-                                    ShowField();
-                                }
-                                break;
-                            case TypeShips.FourCellShip:
-                                {
-                                    SetShip(point, direction, type);
-                                    fourDeckShips--;
-                                    ShowField();
-                                }
-                                break;
-                            default:
-                                break;
+                            Console.WriteLine("Enter cord x");
+                            point.X = int.Parse(Console.ReadLine());
+
+                            Console.WriteLine("Enter cord y");
+                            point.Y = int.Parse(Console.ReadLine());
+
+                        } while (point.X < 1 || point.X > 11 || point.Y < 1 || point.Y > 11 ||
+                            Cells[point.X, point.Y].Value != TypeCell.Empty || AnyShipsAround(point));
+
+                        if (type != TypeShips.OneCellShip)
+                        {
+                            Console.WriteLine("Enter direction" + "\n" +
+                                "1. Вгору" + "\n" +
+                                "2. Вниз" + "\n" +
+                                "3. Вліво" + "\n" +
+                                "4. Вправо");
+                            System.Enum.TryParse(Console.ReadLine(), out direction);
+
+                            switch (type)
+                            {
+                                case TypeShips.TwoCellShip:
+                                    {
+                                        SetShip(point, direction, type);
+                                        twoDeckShips--;
+                                        ShowField();
+                                    }
+                                    break;
+                                case TypeShips.ThreeCellShip:
+                                    {
+                                        SetShip(point, direction, type);
+                                        threeDeckShips--;
+                                        ShowField();
+                                    }
+                                    break;
+                                case TypeShips.FourCellShip:
+                                    {
+                                        SetShip(point, direction, type);
+                                        fourDeckShips--;
+                                        ShowField();
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
-                    }
-                    else if (type == TypeShips.OneCellShip)
-                    {
-                        SetShip(point, direction, type);
-                        oneDeckShips--;
-                        ShowField();
+                        else if (type == TypeShips.OneCellShip)
+                        {
+                            SetShip(point, direction, type);
+                            oneDeckShips--;
+                            ShowField();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Некоректний ввiд");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Некоректний ввiд");
+                        Console.WriteLine("Ви не можете бiльше розмiстити кораблi даного типу");
                     }
-                }         
+
+                }
             }
-            
         }
 
 
