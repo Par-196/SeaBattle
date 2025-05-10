@@ -24,7 +24,6 @@ namespace SeaBattle.Model
             {
                 for (int j = 0; j < Cells.GetLength(0); j++)
                 {
-
                     if (i == 0 || i == 11)
                     {
                         Cells[i, j] = new Cell(TypeCell.Border);
@@ -33,7 +32,6 @@ namespace SeaBattle.Model
                     {
                         Cells[i, j] = new Cell(TypeCell.Border);
                     }
-
                     else Cells[i, j] = new Cell(TypeCell.Empty);
                 }
             }
