@@ -25,11 +25,11 @@ namespace SeaBattle.Model
                         return " ";
                     }
                 case TypeCell.ShipBody:
-                    { 
+                    {
                         return "O";
                     }
                 case TypeCell.DamageBody:
-                    { 
+                    {
                         return "X";
                     }
                 case TypeCell.Border:

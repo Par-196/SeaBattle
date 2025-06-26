@@ -45,7 +45,8 @@ namespace SeaBattle
                         break;
                     case Menu.Start:
                         {
-                            game.Player.MyField.ShowField();
+                            player.MyField.ClearField();
+                            bot.MyField.ClearField();
                             game.StartGame();
                         }
                         break;
