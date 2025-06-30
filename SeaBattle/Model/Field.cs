@@ -122,7 +122,7 @@ namespace SeaBattle.Model
             points.Add(thirdPoint);
             points.Add(fourthPoint);
 
-            (typeShips, points) = EnemyShipType(point, points, typeShips, MyField);
+            (typeShips, points) = ShipType(point, points, typeShips, MyField);
 
 
             allShips = IsShipDead(allShips, typeShips, points, EnemyField, MyField);
@@ -131,7 +131,7 @@ namespace SeaBattle.Model
 
         }
 
-        public (TypeShips, List<Point>) EnemyShipType(Point point, List<Point> points, TypeShips typeShips, Field MyField)
+        public (TypeShips, List<Point>) ShipType(Point point, List<Point> points, TypeShips typeShips, Field MyField)
         {
             for (int X = -1; X < 2; X++)
             {
@@ -141,15 +141,16 @@ namespace SeaBattle.Model
                     {
                         continue;
                     }
+
                     if (MyField.Cells[point.X + X, point.Y + Y].Value == TypeCell.ShipBody)
                     {
                         typeShips = TypeShips.TwoCellShip;
-                        
-                        points[1] = new Point (point.X + X, point.Y + Y);
+                        points[1] = new Point(point.X + X, point.Y + Y);
 
                         if (MyField.Cells[point.X + X + X, point.Y + Y + Y].Value == TypeCell.ShipBody)
                         {
                             typeShips = TypeShips.ThreeCellShip;
+                            points[2] = new Point(point.X + X + X, point.Y + Y + Y);
 
                             if (MyField.Cells[point.X + X + X + X, point.Y + Y + Y + Y].Value == TypeCell.ShipBody)
                             {
@@ -159,33 +160,32 @@ namespace SeaBattle.Model
                             else if (MyField.Cells[point.X - X, point.Y - Y].Value == TypeCell.ShipBody)
                             {
                                 typeShips = TypeShips.FourCellShip;
-                                points[3] = new Point(point.X + X + X + X, point.Y + Y + Y + Y);
+                                points[3] = new Point(point.X - X, point.Y - Y);
                             }
-
-                            points[2] = new Point(point.X + X + X, point.Y + Y + Y);
                         }
                         else if (MyField.Cells[point.X - X, point.Y - Y].Value == TypeCell.ShipBody)
                         {
                             typeShips = TypeShips.ThreeCellShip;
+                            points[2] = new Point(point.X - X, point.Y - Y);
 
                             if (MyField.Cells[point.X - X - X, point.Y - Y - Y].Value == TypeCell.ShipBody)
                             {
                                 typeShips = TypeShips.FourCellShip;
-                                points[3] = new Point(point.X + X + X + X, point.Y + Y + Y + Y);
+                                points[3] = new Point(point.X - X - X, point.Y - Y - Y);
                             }
-                            points[2] = new Point(point.X + X + X, point.Y + Y + Y);
                         }
 
                         return (typeShips, points);
-
                     }
-                    points[0] = new Point(point.X, point.Y);
 
+                    points[0] = new Point(point.X, point.Y);
                 }
             }
+
             typeShips = TypeShips.OneCellShip;
             return (typeShips, points);
         }
+
 
         public int IsShipDead(int allShips, TypeShips typeShips, List<Point> points, Field EnemyField, Field MyField)
         {
@@ -247,7 +247,7 @@ namespace SeaBattle.Model
 
 
 
-        public (int, Point) BotMove(int oldPointX, int oldPointY, int allMyShips, Point point, TypeCell botTypeCell, TypeShips botTypeShips, Field botEnemyField, Field playerMyField)
+        public (int, Point, ShipDirection, bool) BotFire(int oldPointX, int oldPointY, int allMyShips, Point point, TypeCell botTypeCell, TypeShips botTypeShips, ShipDirection direction, bool shipDireactionBeenFound, Field botEnemyField, Field playerMyField)
         {
             
             if (botTypeCell == TypeCell.Empty)
@@ -260,100 +260,203 @@ namespace SeaBattle.Model
                 {
                     botEnemyField.Cells[point.X, point.Y].Value = TypeCell.DamageBody;
 
-
                     allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
-                    
 
                 }
                 else if (Cells[oldPointX, oldPointY] == Cells[point.X, point.Y]) 
                 {
-                    ShipDirection shipDirection = ShipDirection.Up;
+                    if (shipDireactionBeenFound == false)
+                    {
+                        (oldPointX, oldPointY, direction, shipDireactionBeenFound, allMyShips) = LookingForShipParts(point, botEnemyField, playerMyField, direction, botTypeCell, botTypeShips, shipDireactionBeenFound, allMyShips);
+                    }
+                    else if (shipDireactionBeenFound == true)
+                    {
 
-                    (oldPointX, oldPointY) = ShipDirectionFire(point, shipDirection, botEnemyField, playerMyField);
+                        switch (direction)
+                        {
+                            case ShipDirection.Up:
+                                {
+                                    for (int i = -3; i < 4; i++)
+                                    {
+                                        if (i != 0 && point.X + i > 0 && point.X + i < 11 && point.Y > 0 && point.Y < 11 && 
+                                            playerMyField.Cells[point.X + i, point.Y].Value == TypeCell.ShipBody && botEnemyField.Cells[point.X + i, point.Y].Value != TypeCell.DamageBody)
+                                        {
+                                            botEnemyField.Cells[point.X + i, point.Y].Value = TypeCell.DamageBody;
+                                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                                            return (allMyShips, new Point(point.X, point.Y), direction, shipDireactionBeenFound);
+                                        }
+                                    }
+                                }
+                                break;
+                            case ShipDirection.Right:
+                                {
+                                    for (int i = -3; i < 4; i++)
+                                    {
+                                        if (i != 0 && point.X > 0 && point.X < 11 && point.Y + i > 0 && point.Y + i < 11 &&
+                                            playerMyField.Cells[point.X, point.Y + i].Value == TypeCell.ShipBody && botEnemyField.Cells[point.X, point.Y + i].Value != TypeCell.DamageBody)
+                                        {
+                                            botEnemyField.Cells[point.X, point.Y + i].Value = TypeCell.DamageBody;
+                                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                                            return (allMyShips, new Point(point.X, point.Y), direction, shipDireactionBeenFound);
+                                        }
+                                    }
+                                }
+                                break;
+                            case ShipDirection.Down:
+                                {
+                                    for (int i = -3; i < 4; i++)
+                                    {
+                                        if (i != 0 && point.X + i > 0 && point.X + i < 11 && point.Y > 0 && point.Y < 11 &&
+                                            playerMyField.Cells[point.X + i, point.Y].Value == TypeCell.ShipBody && botEnemyField.Cells[point.X + i, point.Y].Value != TypeCell.DamageBody)
+                                        {
+                                            botEnemyField.Cells[point.X + i, point.Y].Value = TypeCell.DamageBody;
+                                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                                            return (allMyShips, new Point(point.X, point.Y), direction, shipDireactionBeenFound);
+                                        }
+                                    }
+                                }
+                                break;
+                            case ShipDirection.Left:
+                                {
+                                    for (int i = -3; i < 4; i++)
+                                    {
+                                        if (i != 0 && point.X > 0 && point.X < 11 && point.Y - i > 0 && point.Y - i < 11 && 
+                                            playerMyField.Cells[point.X, point.Y - i].Value == TypeCell.ShipBody && botEnemyField.Cells[point.X, point.Y - i].Value != TypeCell.DamageBody)
+                                        {
+                                            botEnemyField.Cells[point.X, point.Y - i].Value = TypeCell.DamageBody;
+                                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                                            return (allMyShips, new Point(point.X, point.Y), direction, shipDireactionBeenFound);
+                                        }
+                                    }
+                                }
+                                break;
+
+
+                        }
+                    }
+                    
+
+
+
+
+
+
 
                     if (oldPointX == 0 && oldPointY == 0)
-                    { 
-                        return (allMyShips, point);
+                    {
+                        return (allMyShips, point, direction, shipDireactionBeenFound);
                     }
 
                     point = new Point(oldPointX, oldPointY);
 
-                    allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+
+                    
+
                     
                 }
             }
 
-            return (allMyShips, point);
+            return (allMyShips, point, direction, shipDireactionBeenFound);
         }
 
 
-        public (int, int) ShipDirectionFire(Point point, ShipDirection shipDirection, Field botEnemyField, Field playerMyField) 
+        public (int, int, ShipDirection, bool, int) LookingForShipParts(Point point, Field botEnemyField, Field playerMyField, ShipDirection direction, TypeCell botTypeCell, TypeShips botTypeShips, bool shipDireactionBeenFound, int allMyShips)
         {
-            
-            shipDirection = (ShipDirection)new Random().Next(1, 5);
-
-
-            switch (shipDirection)
+            switch (direction)
             {
                 case ShipDirection.Up:
                     {
-                        if (playerMyField.Cells[point.X - 1, point.Y].Value == TypeCell.ShipBody && playerMyField.Cells[point.X - 1, point.Y].Value != TypeCell.Border)
+                        if (point.X - 1 > 0 && point.X - 1 < 11 && point.Y > 0 && point.Y < 11 && 
+                            playerMyField.Cells[point.X - 1, point.Y].Value == TypeCell.ShipBody && playerMyField.Cells[point.X - 1, point.Y].Value != TypeCell.Border)
                         {
+                            shipDireactionBeenFound = true;
                             botEnemyField.Cells[point.X - 1, point.Y].Value = TypeCell.DamageBody;
-                            return (point.X - 1, point.Y);
+                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                            return (point.X - 1, point.Y, direction, shipDireactionBeenFound, allMyShips);
+
                         }
                         else
                         {
-                            botEnemyField.Cells[point.X - 1, point.Y].Value = TypeCell.MissingBody;
+                            direction = ShipDirection.Right;
+                            if (botEnemyField.Cells[point.X - 1, point.Y].Value != TypeCell.Border
+                                && point.X > 0 && point.X < 11 && point.Y > 0 && point.Y < 11)
+                            {
+                                botEnemyField.Cells[point.X - 1, point.Y].Value = TypeCell.MissingBody;
+                            }
+                            
                         }
                     }
                     break;
                 case ShipDirection.Right:
                     {
-                        if (playerMyField.Cells[point.X, point.Y + 1].Value == TypeCell.ShipBody && playerMyField.Cells[point.X, point.Y + 1].Value != TypeCell.Border)
+                        if (point.X > 0 && point.X < 11 && point.Y + 1 > 0 && point.Y + 1 < 11 && 
+                            playerMyField.Cells[point.X, point.Y + 1].Value == TypeCell.ShipBody && playerMyField.Cells[point.X, point.Y + 1].Value != TypeCell.Border)
                         {
+                            shipDireactionBeenFound = true;
                             botEnemyField.Cells[point.X, point.Y + 1].Value = TypeCell.DamageBody;
-                            return (point.X + 1, point.Y + 1);
+                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                            return (point.X, point.Y + 1, direction, shipDireactionBeenFound, allMyShips);
                         }
-                        else 
+                        else
                         {
-                            botEnemyField.Cells[point.X, point.Y + 1].Value = TypeCell.MissingBody;
+                            direction = ShipDirection.Down;
+                            if (botEnemyField.Cells[point.X, point.Y + 1].Value != TypeCell.Border
+                                && point.X > 0 && point.X < 11 && point.Y > 0 && point.Y < 11)
+                            {
+                                botEnemyField.Cells[point.X, point.Y + 1].Value = TypeCell.MissingBody;
+                            }
+                            
                         }
                     }
                     break;
                 case ShipDirection.Down:
                     {
-                        if (playerMyField.Cells[point.X + 1, point.Y].Value == TypeCell.ShipBody && playerMyField.Cells[point.X + 1, point.Y].Value != TypeCell.Border)
+                        if (point.X + 1 > 0 && point.X + 1 < 11 && point.Y > 0 && point.Y < 11 && 
+                            playerMyField.Cells[point.X + 1, point.Y].Value == TypeCell.ShipBody && playerMyField.Cells[point.X + 1, point.Y].Value != TypeCell.Border)
                         {
+                            shipDireactionBeenFound = true;
                             botEnemyField.Cells[point.X + 1, point.Y].Value = TypeCell.DamageBody;
-                            return (point.X + 1, point.Y);
+                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                            return (point.X + 1, point.Y, direction, shipDireactionBeenFound, allMyShips);
                         }
                         else
                         {
-                            botEnemyField.Cells[point.X + 1, point.Y].Value = TypeCell.MissingBody;
+                            direction = ShipDirection.Left;
+                            if (botEnemyField.Cells[point.X + 1, point.Y].Value != TypeCell.Border
+                                && point.X > 0 && point.X < 11 && point.Y > 0 && point.Y < 11)
+                            {
+                                botEnemyField.Cells[point.X + 1, point.Y].Value = TypeCell.MissingBody;
+                            }
+                           
                         }
                     }
                     break;
                 case ShipDirection.Left:
                     {
-                        if (playerMyField.Cells[point.X, point.Y - 1].Value == TypeCell.ShipBody && playerMyField.Cells[point.X, point.Y - 1].Value != TypeCell.Border)
+                        if (point.X > 0 && point.X < 11 && point.Y - 1 > 0 && point.Y - 1 < 11 && 
+                            playerMyField.Cells[point.X, point.Y - 1].Value == TypeCell.ShipBody && playerMyField.Cells[point.X, point.Y - 1].Value != TypeCell.Border)
                         {
+                            shipDireactionBeenFound = true;
                             botEnemyField.Cells[point.X, point.Y - 1].Value = TypeCell.DamageBody;
-                            return (point.X, point.Y - 1);
+                            allMyShips = CheckShip(allMyShips, point, botTypeCell, botTypeShips, botEnemyField, playerMyField);
+                            return (point.X, point.Y - 1, direction, shipDireactionBeenFound, allMyShips);
                         }
                         else
                         {
-                            botEnemyField.Cells[point.X, point.Y - 1].Value = TypeCell.MissingBody;
+                            direction = ShipDirection.Up;
+                            if (botEnemyField.Cells[point.X, point.Y - 1].Value != TypeCell.Border
+                                && point.X > 0 && point.X < 11 && point.Y > 0 && point.Y < 11)
+                            {
+                                botEnemyField.Cells[point.X, point.Y - 1].Value = TypeCell.MissingBody;
+                            }
                         }
                     }
                     break;
             }
-            return (point.X, point.Y);
+
+
+            return (point.X, point.Y, direction, shipDireactionBeenFound, allMyShips);
         }
-
-
-
-
 
 
 

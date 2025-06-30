@@ -17,9 +17,7 @@ namespace SeaBattle.Model
         
         public void StartGame() 
         {
-            bool isGameOver = false;
-            
-
+           
             Console.WriteLine("1. Розставити кораблi в ручну " + "\n" +
                 "2. Розставити кораблi рандомно");
 
@@ -43,6 +41,8 @@ namespace SeaBattle.Model
             Bot.MyField.ArrangeFieldRandomly();
             Bot.MyField.ShowField();
 
+            
+
             var point = new Point();
             int myOneCellShip = 4;
             int myTwoCellShip = 3;
@@ -58,10 +58,19 @@ namespace SeaBattle.Model
 
             int allEnemyShips = enemyOneCellShip + enemyTwoCellShip + enemyThreeCellShip + enemyFourCellShip;
 
+            
+
+            //Bot 
+            ShipDirection direction = ShipDirection.Up;
+
+            bool shipDireactionBeenFound = false;
+
             bool shipBeenFound = false;
+
 
             int oldPointX = 0;
             int oldPointY = 0;
+
 
             while (allMyShips != 0 && allEnemyShips != 0)
             {
@@ -103,7 +112,7 @@ namespace SeaBattle.Model
                 while (hit)
                 {
 
-                    
+                    int oldAllMyShips = allMyShips;
                     Point botPoints = new Point();
                     Random _random = new Random();
 
@@ -128,29 +137,33 @@ namespace SeaBattle.Model
 
                     TypeShips botTypeShips = TypeShips.OneCellShip;
 
-                    (allMyShips, botPoints) = Bot.EnemyField.BotMove(oldPointX, oldPointY, allMyShips, botPoints, botTypeCell, botTypeShips, Bot.EnemyField, Player.MyField);
-
+                    (allMyShips, botPoints, direction, shipDireactionBeenFound) = Bot.EnemyField.BotFire(oldPointX, oldPointY, allMyShips, botPoints, botTypeCell, botTypeShips, direction, shipDireactionBeenFound, Bot.EnemyField, Player.MyField);
                     
-                    oldPointX = botPoints.X;
-                    oldPointY = botPoints.Y;
 
-                    Console.WriteLine("\n\n\n\nBot Enemy Filed\n\n\n\n");
-                    Bot.EnemyField.ShowField();
-                    if (botTypeCell == TypeCell.ShipBody)
-                    {
-                        shipBeenFound = true;
-                    }
-                    if (botTypeCell != TypeCell.ShipBody)
+                    if (botTypeCell != TypeCell.ShipBody || oldAllMyShips > allMyShips)
                     {
                         hit = false;
                         shipBeenFound = false;
+                        direction = ShipDirection.Up;
+                        shipDireactionBeenFound = false;
                     }
+                    else
+                    {
+                        shipBeenFound = true;
+                        oldPointX = botPoints.X;
+                        oldPointY = botPoints.Y;
+                    }
+                    
+
+                    Console.WriteLine("\n\n\n\nBot Enemy Filed\n\n\n\n");
+                    Bot.EnemyField.ShowField();
+                    
                 }
             }
 
             if (allMyShips == 0) 
             {
-                Console.WriteLine("\n\nВигра Бот, ти лох\n");
+                Console.WriteLine("\n\nВиграв Бот, ти лох\n");
             }
             else if (allEnemyShips == 0) 
             {
